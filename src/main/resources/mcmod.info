@@ -1,0 +1,17 @@
+[
+{
+  "modid": "com.docbok.dagger",
+  "name": "Doc's Dagger Mod",
+  "description": "Adds a dagger to the game that can also be thrown",
+  "version": "${version}",
+  "mcversion": "${mcversion}",
+  "url": "",
+  "updateUrl": "",
+  "authorList": ["DocBok"],
+  "credits": "Doc Bok",
+  "logoFile": "",
+  "screenshots": [],
+  "dependencies": []
+},
+
+]
