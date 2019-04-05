@@ -1,8 +1,10 @@
-package com.docbok.dagger.items;
+package com.docbok.dagger.item;
 
 import java.util.HashSet;
 import java.util.Set;
 
+import com.docbok.dagger.Reference;
+import com.docbok.dagger.entity.projectile.EntityDaggerWood;
 import com.google.common.collect.Multimap;
 
 import net.minecraft.block.material.Material;
@@ -10,7 +12,7 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.entity.ai.attributes.AttributeModifier;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.projectile.EntitySnowball;
+import net.minecraft.entity.projectile.EntityThrowable;
 import net.minecraft.init.SoundEvents;
 import net.minecraft.inventory.EntityEquipmentSlot;
 import net.minecraft.item.ItemStack;
@@ -19,12 +21,13 @@ import net.minecraft.stats.StatList;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.EnumActionResult;
 import net.minecraft.util.EnumHand;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.SoundEvent;
 import net.minecraft.world.World;
 import scala.actors.threadpool.Arrays;
 
-public class ItemWeapon extends ItemSword
+public abstract class ItemWeapon extends ItemSword
 {
 	/*
 	 * Creates a new weapon with the specified attributes and traits.
@@ -38,16 +41,29 @@ public class ItemWeapon extends ItemSword
         _material = material;
         
         _damage = damage;
-        _damageType = damageType;
+        switch(damageType)
+        {
+        case Bludgeoning:
+        	_weaponTraits.add(WeaponTrait.Bludgeoning);
+        	break;
+
+        case Slashing:
+        	_weaponTraits.add(WeaponTrait.Slashing);
+        	break;
+
+        case Piercing:
+        	_weaponTraits.add(WeaponTrait.Piercing);
+        	break;
+
+        case PiercingAndSlashing:
+        	_weaponTraits.add(WeaponTrait.Slashing);
+        	_weaponTraits.add(WeaponTrait.Piercing);
+        	break;
+        }
         _weight = weight;
         
         //	Light weapons attack faster.
         _attackDamage = _damage + _material.getAttackDamage();
-        
-        if (hasWeaponTrait(WeaponTrait.Light))
-        {
-        	weight -= 1.0d;
-        }
         
         _attackSpeed = -2 - (weight * 0.1d);
         _weaponName = weaponName;
@@ -66,9 +82,19 @@ public class ItemWeapon extends ItemSword
         String materialName = material.toString().toLowerCase();
         setRegistryName(materialName + "_" + weaponName);
         
+        _textureLocation = new ResourceLocation(Reference.MODID + ":textures/items/" + materialName + "_" + weaponName + ".png");
+        
         materialName = materialName.substring(0, 1).toUpperCase() + materialName.substring(1);
         setUnlocalizedName(weaponName + materialName);
 	}
+
+    /**
+     * Returns the amount of damage this item will deal. One heart of damage is equal to 2 damage points.
+     */
+    public float getThrownDamage()
+    {
+        return (float) _attackDamage;
+    }
 
 	/*
 	 * Overridden so that weapons in general cannot destroy webs.
@@ -151,14 +177,37 @@ public class ItemWeapon extends ItemSword
     }
     
 	public void playSound(EntityPlayer player, double x, double y, double z, SoundEvent sound, SoundCategory category, float volume, float pitch)
-	{
-		if (hasWeaponTrait(WeaponTrait.Silent))
-		{
-			volume *= 0.2;
-		}
-		
+	{		
 		player.world.playSound((EntityPlayer)null, x, y, z, sound, category, volume, pitch);
 	}
+    
+    public boolean isBludgeoning() { return hasWeaponTrait(WeaponTrait.Bludgeoning); }
+    public boolean isPiercing() { return hasWeaponTrait(WeaponTrait.Piercing); }
+    public boolean isSlashing() { return hasWeaponTrait(WeaponTrait.Slashing); }
+    
+    public boolean hasWeaponTrait(WeaponTrait trait) { return _weaponTraits.contains(trait); }
+    
+    public ResourceLocation getTexture() { return _textureLocation; }
+    
+    public enum WeaponTrait
+    {
+    	Bludgeoning,
+    	Piercing,
+    	Slashing,
+    	Thrown
+    }
+    
+    protected abstract EntityThrowable getEntityThrowable(World worldIn, EntityPlayer playerIn);
+    
+    protected ToolMaterial getMaterial() { return _material; }
+    
+    protected enum DamageType
+    {
+    	Bludgeoning,
+    	Piercing,
+    	Slashing,
+    	PiercingAndSlashing
+    }
     
     /*
      * Throws a weapon.
@@ -171,51 +220,26 @@ public class ItemWeapon extends ItemSword
             itemstack.shrink(1);
         }
 
-        playSound(playerIn, SoundEvents.ENTITY_SNOWBALL_THROW, SoundCategory.NEUTRAL, 0.5F, 0.4F / (itemRand.nextFloat() * 0.4F + 0.8F));
+        playSound(playerIn, SoundEvents.ENTITY_PLAYER_ATTACK_NODAMAGE, SoundCategory.NEUTRAL, 0.5F, 0.4F / (itemRand.nextFloat() * 0.4F + 0.8F));
 
         if (!worldIn.isRemote)
         {
-            EntitySnowball entitysnowball = new EntitySnowball(worldIn, playerIn);
-            entitysnowball.shoot(playerIn, playerIn.rotationPitch, playerIn.rotationYaw, 0.0F, 1.5F, 1.0F);
-            worldIn.spawnEntity(entitysnowball);
+            EntityThrowable entityWeapon = getEntityThrowable(worldIn, playerIn);
+            entityWeapon.shoot(playerIn, playerIn.rotationPitch, playerIn.rotationYaw, 0.0F, 1.5F, 1.0F);
+            worldIn.spawnEntity(entityWeapon);
         }
 
         playerIn.addStat(StatList.getObjectUseStats(this));
         return new ActionResult<ItemStack>(EnumActionResult.SUCCESS, itemstack);
     }
     
-    public boolean isBludgeoning() { return _damageType == DamageType.Bludgeoning; }
-    public boolean isPiercing() { return _damageType == DamageType.Piercing ||
-    									 _damageType == DamageType.PiercingAndSlashing; }
-    public boolean isSlashing() { return _damageType == DamageType.Slashing ||
-    									 _damageType == DamageType.PiercingAndSlashing; }
-    
-    public boolean hasWeaponTrait(WeaponTrait trait) { return _weaponTraits.contains(trait); }
-    
-    public enum WeaponTrait
-    {
-    	Finesse,
-    	Light,
-    	ProneFighting,
-    	Silent,
-    	Thrown
-    }
-    
-    protected enum DamageType
-    {
-    	Bludgeoning,
-    	Piercing,
-    	Slashing,
-    	PiercingAndSlashing
-    }
-    
     private final ToolMaterial _material;
     private final double _damage;
     private final double _weight;
     private final int _burnTime;
-    private final DamageType _damageType;
     private final double _attackDamage;
     private final double _attackSpeed;
     private final Set<WeaponTrait> _weaponTraits;
     private final String _weaponName;
+    private final ResourceLocation _textureLocation;
 }

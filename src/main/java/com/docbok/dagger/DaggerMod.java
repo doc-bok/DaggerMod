@@ -2,7 +2,7 @@ package com.docbok.dagger;
 
 import org.apache.logging.log4j.Logger;
 
-import com.docbok.dagger.init.ModItems;
+import com.docbok.dagger.event.RegistryEventListener;
 
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventHandler;
@@ -19,7 +19,7 @@ public class DaggerMod
 	{
 		_logger = event.getModLog();
 		_logger.info("Mod initializing : " + Reference.MODNAME);
-		ModItems.init(_logger);
+		RegistryEventListener.init(_logger);
 	}
 	
 	@EventHandler

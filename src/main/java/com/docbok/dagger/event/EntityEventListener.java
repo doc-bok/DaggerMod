@@ -1,13 +1,10 @@
-package com.docbok.dagger.init;
+package com.docbok.dagger.event;
 
 import org.apache.logging.log4j.Logger;
 
 import com.docbok.dagger.Reference;
-import com.docbok.dagger.items.ItemDagger;
-import com.docbok.dagger.items.ItemWeapon;
-import com.docbok.dagger.items.ItemWeapon.WeaponTrait;
+import com.docbok.dagger.item.ItemWeapon;
 
-import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
@@ -15,60 +12,34 @@ import net.minecraft.entity.EnumCreatureAttribute;
 import net.minecraft.entity.IEntityMultiPart;
 import net.minecraft.entity.MultiPartEntityPart;
 import net.minecraft.entity.SharedMonsterAttributes;
+import net.minecraft.entity.monster.AbstractSkeleton;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.init.MobEffects;
 import net.minecraft.init.SoundEvents;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.Item.ToolMaterial;
 import net.minecraft.network.play.server.SPacketEntityVelocity;
+import net.minecraft.potion.PotionEffect;
 import net.minecraft.stats.StatList;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.EnumParticleTypes;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.WorldServer;
-import net.minecraftforge.client.event.ModelRegistryEvent;
-import net.minecraftforge.client.model.ModelLoader;
-import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.event.entity.player.AttackEntityEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
 @Mod.EventBusSubscriber(modid=Reference.MODID)
-public class ModItems
-{
+public class EntityEventListener 
+{	
 	public static void init(Logger logger)
 	{
 		_logger = logger;
-		_logger.info("Init Mod Items : " + Reference.MODNAME);
-		
-		_items = new Item[] {
-			new ItemDagger(ToolMaterial.WOOD),
-			new ItemDagger(ToolMaterial.STONE),
-			new ItemDagger(ToolMaterial.IRON),
-			new ItemDagger(ToolMaterial.GOLD),
-			new ItemDagger(ToolMaterial.DIAMOND)	
-		};
+		_logger.info("Init Entity Event Listener : " + Reference.MODNAME);
 	}
-	
-	@SubscribeEvent
-	public static void registerItems(RegistryEvent.Register<Item> event)
-	{
-		_logger.info("Register Mod Items : " + Reference.MODNAME);
-		event.getRegistry().registerAll(_items);
-	}
-	
-	@SubscribeEvent
-	public static void registerRenders(ModelRegistryEvent event)
-	{
-		for (Item item : _items)
-		{
-			ModelLoader.setCustomModelResourceLocation(item, 0, new ModelResourceLocation(item.getRegistryName(), "inventory"));
-		}
-	}
-	
+
 	/*
 	 * Allows for attacks by weapons without a sweep attack.
 	 */
@@ -94,7 +65,15 @@ public class ModItems
                     
                     float modifier;
                     if (targetEntity instanceof EntityLivingBase)
-                    {
+                    {                       
+                    	if (targetEntity instanceof AbstractSkeleton)
+	                    {
+	                    	if (!weapon.isBludgeoning())
+	                    	{
+	                    		attackDamage *= 0.5;
+	                    	}
+	                    }
+                    	
                         modifier = EnchantmentHelper.getModifierForCreature(player.getHeldItemMainhand(), ((EntityLivingBase)targetEntity).getCreatureAttribute());
                     }
                     else
@@ -103,10 +82,6 @@ public class ModItems
                     }
 
                     float cooledAttackStrength = player.getCooledAttackStrength(0.5F);
-                    if (weapon.hasWeaponTrait(WeaponTrait.ProneFighting))
-                    {
-                    	cooledAttackStrength = Math.min(1.1f * cooledAttackStrength, 1.0f);
-                    }
                     
                     attackDamage = attackDamage * (0.2F + cooledAttackStrength * cooledAttackStrength * 0.8F);
                     modifier = modifier * cooledAttackStrength;
@@ -115,10 +90,6 @@ public class ModItems
                     if (attackDamage > 0.0F || modifier > 0.0F)
                     {
                         boolean isFullAttackStrength = cooledAttackStrength > 0.9F;
-                        if (weapon.hasWeaponTrait(WeaponTrait.Finesse))
-                        {
-                        	isFullAttackStrength = cooledAttackStrength > 0.85f;
-                        }
                         
                         int knockbackModifier = EnchantmentHelper.getKnockbackModifier(player);                        
                         if (isFullAttackStrength)
@@ -127,16 +98,6 @@ public class ModItems
 	                        {
 	                        	weapon.playSound(player, SoundEvents.ENTITY_PLAYER_ATTACK_KNOCKBACK);
 	                            ++knockbackModifier;
-	                            
-	                            if (weapon.isBludgeoning())
-	                            {
-	                            	++knockbackModifier;
-	                            }
-	                        }
-	                        
-	                        if (weapon.isSlashing())
-	                        {
-	                        	attackDamage += 1;
 	                        }
                         }
 
@@ -153,7 +114,7 @@ public class ModItems
                         float criticalHitModifier = 1.0f;
                         if (isCriticalHit)
                         {
-                        	criticalHitModifier = weapon.isPiercing() ? 2.0f : 1.5f;
+                        	criticalHitModifier = 1.5f;
                         }
 
                         net.minecraftforge.event.entity.player.CriticalHitEvent hitResult = net.minecraftforge.common.ForgeHooks.getCriticalHit(player, targetEntity, isCriticalHit, criticalHitModifier);
@@ -182,10 +143,57 @@ public class ModItems
                         double targetMotionX = targetEntity.motionX;
                         double targetMotionY = targetEntity.motionY;
                         double targetMotionZ = targetEntity.motionZ;
-                        boolean isKnockedBack = targetEntity.attackEntityFrom(DamageSource.causePlayerDamage(player), attackDamage);
+                        boolean isAttacked = targetEntity.attackEntityFrom(DamageSource.causePlayerDamage(player), attackDamage);
 
-                        if (isKnockedBack)
+                        if (isAttacked)
                         {
+                            if (isCriticalHit)
+                            {
+                            	player.onCriticalHit(targetEntity);
+                            	
+                            	if (weapon.isSlashing())
+                            	{
+                            		float sweepingDamage = 1.0F + EnchantmentHelper.getSweepingDamageRatio(player) * attackDamage;
+
+                                    for (EntityLivingBase entitylivingbase : player.world.getEntitiesWithinAABB(EntityLivingBase.class, targetEntity.getEntityBoundingBox().grow(1.0D, 0.25D, 1.0D)))
+                                    {
+                                        if (entitylivingbase != player && entitylivingbase != targetEntity && !player.isOnSameTeam(entitylivingbase) && player.getDistanceSq(entitylivingbase) < 9.0D)
+                                        {
+                                            entitylivingbase.knockBack(player, 0.4F, (double)MathHelper.sin(player.rotationYaw * 0.017453292F), (double)(-MathHelper.cos(player.rotationYaw * 0.017453292F)));
+                                            entitylivingbase.attackEntityFrom(DamageSource.causePlayerDamage(player), sweepingDamage);
+                                        }
+                                    }
+
+                                    weapon.playSound(player, SoundEvents.ENTITY_PLAYER_ATTACK_SWEEP);
+                                    player.spawnSweepParticles();
+                            	}
+                            	else
+                            	{
+                            		weapon.playSound(player, SoundEvents.ENTITY_PLAYER_ATTACK_CRIT);
+                            	}
+                            	
+                            	if (weapon.isBludgeoning())
+                            	{
+                            		knockbackModifier = (knockbackModifier + 1) * 2;
+                            	}
+                            	
+                            	if (weapon.isPiercing())
+                            	{
+                            		((EntityLivingBase)targetEntity).addPotionEffect(new PotionEffect(MobEffects.WEAKNESS, 6 * 20));
+                            	}
+                            }
+                            else
+                            {
+                                if (isFullAttackStrength)
+                                {
+                                	weapon.playSound(player, SoundEvents.ENTITY_PLAYER_ATTACK_STRONG);
+                                }
+                                else
+                                {
+                                	weapon.playSound(player, SoundEvents.ENTITY_PLAYER_ATTACK_WEAK);
+                                }
+                            }
+                            
                             if (knockbackModifier > 0)
                             {
                                 if (targetEntity instanceof EntityLivingBase)
@@ -209,24 +217,6 @@ public class ModItems
                                 targetEntity.motionX = targetMotionX;
                                 targetEntity.motionY = targetMotionY;
                                 targetEntity.motionZ = targetMotionZ;
-                            }
-
-                            if (isCriticalHit)
-                            {
-                            	weapon.playSound(player, SoundEvents.ENTITY_PLAYER_ATTACK_CRIT);
-                            	player.onCriticalHit(targetEntity);
-                            }
-
-                            if (!isCriticalHit)
-                            {
-                                if (isFullAttackStrength)
-                                {
-                                	weapon.playSound(player, SoundEvents.ENTITY_PLAYER_ATTACK_STRONG);
-                                }
-                                else
-                                {
-                                	weapon.playSound(player, SoundEvents.ENTITY_PLAYER_ATTACK_WEAK);
-                                }
                             }
 
                             if (modifier > 0.0F)
@@ -301,6 +291,5 @@ public class ModItems
         }
 	}
 	
-	private static Item[] _items;
 	private static Logger _logger;
 }
