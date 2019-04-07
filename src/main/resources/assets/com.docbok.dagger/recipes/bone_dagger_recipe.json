@@ -1,0 +1,24 @@
+{ 
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "A",
+    "B"  ],
+  "key": {
+    "A": [
+      {
+      	"type" : "forge:ore_dict",
+      	"ore" : "bone"
+      } 
+    ],
+    "B": [
+      {
+      	"type" : "forge:ore_dict",
+      	"ore" : "stickWood"
+      }
+    ]
+  },
+  "result": {
+    "item": "com.docbok.dagger:bone_dagger",
+    "data": 0
+  }
+}

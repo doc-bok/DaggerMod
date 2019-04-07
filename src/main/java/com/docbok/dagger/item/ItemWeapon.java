@@ -219,7 +219,7 @@ public class ItemWeapon extends ItemSword
 
         if (!worldIn.isRemote)
         {
-        	EntityWeapon entityWeapon = new EntityWeapon(worldIn, playerIn);//getEntityThrowable(worldIn, playerIn);
+        	EntityWeapon entityWeapon = new EntityWeapon(worldIn, playerIn);
         	entityWeapon.setItem(item);
             entityWeapon.shoot(playerIn, playerIn.rotationPitch, playerIn.rotationYaw, 0.0F, 1.5F, 1.0F);
             worldIn.spawnEntity(entityWeapon);

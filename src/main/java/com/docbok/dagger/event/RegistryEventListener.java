@@ -7,6 +7,7 @@ import com.docbok.dagger.client.renderer.RenderWeapon;
 import com.docbok.dagger.entity.projectile.EntityWeapon;
 import com.docbok.dagger.item.ItemDagger;
 import com.docbok.dagger.item.ItemList;
+import com.docbok.dagger.material.MaterialList;
 
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.item.Item;
@@ -28,6 +29,8 @@ public class RegistryEventListener
 		_logger = logger;
 		_logger.info("Init Mod Items : " + Reference.MODNAME);
 
+		ItemList.ITEM_DAGGER_BONE = new ItemDagger(MaterialList.BONE);
+		ItemList.ITEM_DAGGER_FLINT = new ItemDagger(MaterialList.FLINT);
 		ItemList.ITEM_DAGGER_WOOD = new ItemDagger(ToolMaterial.WOOD);
 		ItemList.ITEM_DAGGER_STONE = new ItemDagger(ToolMaterial.STONE);
 		ItemList.ITEM_DAGGER_IRON = new ItemDagger(ToolMaterial.IRON);
@@ -36,6 +39,8 @@ public class RegistryEventListener
 
 		_items = new Item[] 
 		{ 
+			ItemList.ITEM_DAGGER_BONE,
+			ItemList.ITEM_DAGGER_FLINT,
 			ItemList.ITEM_DAGGER_WOOD,
 			ItemList.ITEM_DAGGER_STONE,
 			ItemList.ITEM_DAGGER_IRON,
