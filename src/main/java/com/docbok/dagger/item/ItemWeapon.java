@@ -4,7 +4,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import com.docbok.dagger.Reference;
-import com.docbok.dagger.entity.projectile.EntityDaggerWood;
+import com.docbok.dagger.entity.projectile.EntityWeapon;
 import com.google.common.collect.Multimap;
 
 import net.minecraft.block.material.Material;
@@ -12,9 +12,9 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.entity.ai.attributes.AttributeModifier;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.projectile.EntityThrowable;
 import net.minecraft.init.SoundEvents;
 import net.minecraft.inventory.EntityEquipmentSlot;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemSword;
 import net.minecraft.stats.StatList;
@@ -66,7 +66,7 @@ public abstract class ItemWeapon extends ItemSword
         _attackDamage = _damage + _material.getAttackDamage();
         
         _attackSpeed = -2 - (weight * 0.1d);
-        _weaponName = weaponName;
+        //_weaponName = weaponName;
         
         if (material == ToolMaterial.WOOD)
         {
@@ -197,7 +197,7 @@ public abstract class ItemWeapon extends ItemSword
     	Thrown
     }
     
-    protected abstract EntityThrowable getEntityThrowable(World worldIn, EntityPlayer playerIn);
+    protected abstract EntityWeapon getEntityThrowable(World worldIn, EntityPlayer playerIn);
     
     protected ToolMaterial getMaterial() { return _material; }
     
@@ -214,23 +214,23 @@ public abstract class ItemWeapon extends ItemSword
      */
     private ActionResult<ItemStack> throwWeapon(World worldIn, EntityPlayer playerIn, EnumHand handIn)
     {
-        ItemStack itemstack = playerIn.getHeldItem(handIn);
-    	if (!playerIn.capabilities.isCreativeMode)
-        {
-            itemstack.shrink(1);
-        }
+        ItemStack itemStack = playerIn.getHeldItem(handIn); 
+        Item item = itemStack.getItem();
+        int damage = itemStack.getItemDamage();
+        itemStack.shrink(1);
 
         playSound(playerIn, SoundEvents.ENTITY_PLAYER_ATTACK_NODAMAGE, SoundCategory.NEUTRAL, 0.5F, 0.4F / (itemRand.nextFloat() * 0.4F + 0.8F));
 
         if (!worldIn.isRemote)
         {
-            EntityThrowable entityWeapon = getEntityThrowable(worldIn, playerIn);
+        	EntityWeapon entityWeapon = getEntityThrowable(worldIn, playerIn);
+        	entityWeapon.setItem(item, damage);
             entityWeapon.shoot(playerIn, playerIn.rotationPitch, playerIn.rotationYaw, 0.0F, 1.5F, 1.0F);
             worldIn.spawnEntity(entityWeapon);
         }
-
+        
         playerIn.addStat(StatList.getObjectUseStats(this));
-        return new ActionResult<ItemStack>(EnumActionResult.SUCCESS, itemstack);
+        return new ActionResult<ItemStack>(EnumActionResult.SUCCESS, itemStack);
     }
     
     private final ToolMaterial _material;
@@ -240,6 +240,6 @@ public abstract class ItemWeapon extends ItemSword
     private final double _attackDamage;
     private final double _attackSpeed;
     private final Set<WeaponTrait> _weaponTraits;
-    private final String _weaponName;
+    //private final String _weaponName;
     private final ResourceLocation _textureLocation;
 }

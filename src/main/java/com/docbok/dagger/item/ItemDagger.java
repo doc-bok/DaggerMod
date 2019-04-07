@@ -5,9 +5,9 @@ import com.docbok.dagger.entity.projectile.EntityDaggerGold;
 import com.docbok.dagger.entity.projectile.EntityDaggerIron;
 import com.docbok.dagger.entity.projectile.EntityDaggerStone;
 import com.docbok.dagger.entity.projectile.EntityDaggerWood;
+import com.docbok.dagger.entity.projectile.EntityWeapon;
 
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.projectile.EntityThrowable;
 import net.minecraft.world.World;
 
 public class ItemDagger extends ItemWeapon
@@ -20,7 +20,7 @@ public class ItemDagger extends ItemWeapon
         });
 	}
     
-    protected EntityThrowable getEntityThrowable(World worldIn, EntityPlayer playerIn)
+    protected EntityWeapon getEntityThrowable(World worldIn, EntityPlayer playerIn)
     {
     	switch (getMaterial())
     	{

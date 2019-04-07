@@ -6,7 +6,7 @@ import net.minecraft.item.Item.ToolMaterial;
 import net.minecraft.util.datafix.DataFixer;
 import net.minecraft.world.World;
 
-public class EntityDaggerStone extends EntityDagger
+public class EntityDaggerStone extends EntityWeapon
 {	
 	public EntityDaggerStone(World worldIn)
 	{
