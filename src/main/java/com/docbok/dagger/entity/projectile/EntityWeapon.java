@@ -39,20 +39,17 @@ public class EntityWeapon extends EntityThrowable
     {
         getDataManager().register(ITEM, ItemStack.EMPTY);
     }
-    
-	public void setItem(ItemWeapon item)
-	{ 
-		setItem(new ItemStack(item));
-	}
 	
     public ItemStack getItemStack()
     {
         return (ItemStack)getDataManager().get(ITEM);
     }
 	
-	public void setItem(ItemStack stack)
+	public void setItem(ItemStack weapon)
 	{
-        getDataManager().set(ITEM, stack);
+		ItemStack copy = new ItemStack(weapon.getItem());
+		copy.setItemDamage(weapon.getItemDamage());
+        getDataManager().set(ITEM, copy);
         getDataManager().setDirty(ITEM);		
 	}
 

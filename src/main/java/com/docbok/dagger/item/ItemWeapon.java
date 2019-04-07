@@ -212,18 +212,18 @@ public class ItemWeapon extends ItemSword
     private ActionResult<ItemStack> throwWeapon(World worldIn, EntityPlayer playerIn, EnumHand handIn)
     {
         ItemStack itemStack = playerIn.getHeldItem(handIn); 
-        ItemWeapon item = (ItemWeapon)itemStack.getItem();
-        itemStack.shrink(1);
 
         playSound(playerIn, SoundEvents.ENTITY_PLAYER_ATTACK_NODAMAGE, SoundCategory.NEUTRAL, 0.5F, 0.4F / (itemRand.nextFloat() * 0.4F + 0.8F));
 
         if (!worldIn.isRemote)
         {
         	EntityWeapon entityWeapon = new EntityWeapon(worldIn, playerIn);
-        	entityWeapon.setItem(item);
+        	entityWeapon.setItem(itemStack);
             entityWeapon.shoot(playerIn, playerIn.rotationPitch, playerIn.rotationYaw, 0.0F, 1.5F, 1.0F);
             worldIn.spawnEntity(entityWeapon);
         }
+        
+        itemStack.shrink(1);
         
         playerIn.addStat(StatList.getObjectUseStats(this));
         return new ActionResult<ItemStack>(EnumActionResult.SUCCESS, itemStack);
