@@ -1,10 +1,10 @@
 package com.docbok.dagger.entity.projectile;
 
+import com.docbok.dagger.item.ItemWeapon;
+
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.projectile.EntityThrowable;
-import net.minecraft.item.Item;
-import net.minecraft.item.Item.ToolMaterial;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.math.RayTraceResult;
@@ -12,42 +12,40 @@ import net.minecraft.world.World;
 
 public class EntityWeapon extends EntityThrowable
 {	
-	public EntityWeapon(World worldIn, ToolMaterial material)
+	public EntityWeapon(World worldIn)
 	{
 		super(worldIn);
-		_material = material;
 	}
 	
-	public EntityWeapon(World worldIn, EntityLivingBase throwerIn, ToolMaterial material)
+	public EntityWeapon(World worldIn, EntityLivingBase throwerIn)
 	{
 		super(worldIn, throwerIn);
-		_material = material;
 	}
 	
-	public EntityWeapon(World worldIn, double x, double y, double z, ToolMaterial material)
+	public EntityWeapon(World worldIn, double x, double y, double z)
 	{
 		super(worldIn, x, y, z);
-		_material = material;
 	}
 	
-	public void setItem(Item item, int damage) { _item = item; _damage = damage; }	
+	public ItemWeapon getItem() { return _item; }
+	public void setItem(ItemWeapon item, int damage) { _item = item; _damage = damage; }
 
 	@Override
 	protected void onImpact(RayTraceResult result)
-	{
-		if (result.entityHit != null)
-		{
-			float damage = _material.getAttackDamage();
-			result.entityHit.attackEntityFrom(DamageSource.causeThrownDamage(this,  getThrower()), (float)damage);
-			_damage += 1;
-		}
-		else
-		{
-			_damage += 2;
-		}
-		
+	{		
 		if (!world.isRemote)
 		{
+			if (result.entityHit != null)
+			{
+				float damage = _item.getThrownDamage();
+				result.entityHit.attackEntityFrom(DamageSource.causeThrownDamage(this,  getThrower()), (float)damage);
+				_damage += 1;
+			}
+			else
+			{
+				_damage += 2;
+			}
+			
 			ItemStack itemStack = new ItemStack(_item);
 			if (_damage < itemStack.getMaxDamage())
 			{
@@ -59,7 +57,6 @@ public class EntityWeapon extends EntityThrowable
 		}
 	}
 
-	private final ToolMaterial _material;
-	private Item _item;
+	private ItemWeapon _item;
 	private int _damage;
 }

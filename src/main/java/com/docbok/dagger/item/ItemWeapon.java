@@ -14,7 +14,6 @@ import net.minecraft.entity.ai.attributes.AttributeModifier;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.SoundEvents;
 import net.minecraft.inventory.EntityEquipmentSlot;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemSword;
 import net.minecraft.stats.StatList;
@@ -215,7 +214,7 @@ public abstract class ItemWeapon extends ItemSword
     private ActionResult<ItemStack> throwWeapon(World worldIn, EntityPlayer playerIn, EnumHand handIn)
     {
         ItemStack itemStack = playerIn.getHeldItem(handIn); 
-        Item item = itemStack.getItem();
+        ItemWeapon item = (ItemWeapon)itemStack.getItem();
         int damage = itemStack.getItemDamage();
         itemStack.shrink(1);
 
