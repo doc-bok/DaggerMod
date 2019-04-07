@@ -3,16 +3,8 @@ package com.docbok.dagger.event;
 import org.apache.logging.log4j.Logger;
 
 import com.docbok.dagger.Reference;
-import com.docbok.dagger.client.renderer.RenderDaggerDiamond;
-import com.docbok.dagger.client.renderer.RenderDaggerGold;
-import com.docbok.dagger.client.renderer.RenderDaggerIron;
-import com.docbok.dagger.client.renderer.RenderDaggerStone;
-import com.docbok.dagger.client.renderer.RenderDaggerWood;
-import com.docbok.dagger.entity.projectile.EntityDaggerDiamond;
-import com.docbok.dagger.entity.projectile.EntityDaggerGold;
-import com.docbok.dagger.entity.projectile.EntityDaggerIron;
-import com.docbok.dagger.entity.projectile.EntityDaggerStone;
-import com.docbok.dagger.entity.projectile.EntityDaggerWood;
+import com.docbok.dagger.client.renderer.RenderWeapon;
+import com.docbok.dagger.entity.projectile.EntityWeapon;
 import com.docbok.dagger.item.ItemDagger;
 import com.docbok.dagger.item.ItemList;
 
@@ -54,18 +46,10 @@ public class RegistryEventListener
 		int networkId = 0;
 		_entities = new EntityEntry[]
 		{ 
-			EntityEntryBuilder.create().entity(EntityDaggerWood.class).id(Reference.MODID + ":" + "entity_dagger_wood", networkId++).name("wood_dagger").tracker(80, 3, true).build(),
-			EntityEntryBuilder.create().entity(EntityDaggerStone.class).id(Reference.MODID + ":" + "entity_dagger_stone", networkId++).name("stone_dagger").tracker(80, 3, true).build(),
-			EntityEntryBuilder.create().entity(EntityDaggerIron.class).id(Reference.MODID + ":" + "entity_dagger_iron", networkId++).name("iron_dagger").tracker(80, 3, true).build(),
-			EntityEntryBuilder.create().entity(EntityDaggerGold.class).id(Reference.MODID + ":" + "entity_dagger_gold", networkId++).name("gold_dagger").tracker(80, 3, true).build(),
-			EntityEntryBuilder.create().entity(EntityDaggerDiamond.class).id(Reference.MODID + ":" + "entity_dagger_diamond", networkId++).name("diamond_dagger").tracker(80, 3, true).build()
+			EntityEntryBuilder.create().entity(EntityWeapon.class).id(Reference.MODID + ":" + "entity_weapon", networkId++).name("weapon").tracker(80, 3, true).build()
 		};
 
-		RenderingRegistry.registerEntityRenderingHandler(EntityDaggerWood.class, RenderDaggerWood::new);
-		RenderingRegistry.registerEntityRenderingHandler(EntityDaggerStone.class, RenderDaggerStone::new);
-		RenderingRegistry.registerEntityRenderingHandler(EntityDaggerIron.class, RenderDaggerIron::new);
-		RenderingRegistry.registerEntityRenderingHandler(EntityDaggerGold.class, RenderDaggerGold::new);
-		RenderingRegistry.registerEntityRenderingHandler(EntityDaggerDiamond.class, RenderDaggerDiamond::new);
+		RenderingRegistry.registerEntityRenderingHandler(EntityWeapon.class, RenderWeapon::new);
 	}
 
 	@SubscribeEvent

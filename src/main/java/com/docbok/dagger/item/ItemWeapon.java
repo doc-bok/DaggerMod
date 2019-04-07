@@ -26,7 +26,7 @@ import net.minecraft.util.SoundEvent;
 import net.minecraft.world.World;
 import scala.actors.threadpool.Arrays;
 
-public abstract class ItemWeapon extends ItemSword
+public class ItemWeapon extends ItemSword
 {
 	/*
 	 * Creates a new weapon with the specified attributes and traits.
@@ -76,7 +76,7 @@ public abstract class ItemWeapon extends ItemSword
         	_burnTime = 0;
         }        
         
-        setMaxDamage(material.getMaxUses() / 2);
+        setMaxDamage(material.getMaxUses());
         
         String materialName = material.toString().toLowerCase();
         setRegistryName(materialName + "_" + weaponName);
@@ -196,8 +196,6 @@ public abstract class ItemWeapon extends ItemSword
     	Thrown
     }
     
-    protected abstract EntityWeapon getEntityThrowable(World worldIn, EntityPlayer playerIn);
-    
     protected ToolMaterial getMaterial() { return _material; }
     
     protected enum DamageType
@@ -215,15 +213,14 @@ public abstract class ItemWeapon extends ItemSword
     {
         ItemStack itemStack = playerIn.getHeldItem(handIn); 
         ItemWeapon item = (ItemWeapon)itemStack.getItem();
-        int damage = itemStack.getItemDamage();
         itemStack.shrink(1);
 
         playSound(playerIn, SoundEvents.ENTITY_PLAYER_ATTACK_NODAMAGE, SoundCategory.NEUTRAL, 0.5F, 0.4F / (itemRand.nextFloat() * 0.4F + 0.8F));
 
         if (!worldIn.isRemote)
         {
-        	EntityWeapon entityWeapon = getEntityThrowable(worldIn, playerIn);
-        	entityWeapon.setItem(item, damage);
+        	EntityWeapon entityWeapon = new EntityWeapon(worldIn, playerIn);//getEntityThrowable(worldIn, playerIn);
+        	entityWeapon.setItem(item);
             entityWeapon.shoot(playerIn, playerIn.rotationPitch, playerIn.rotationYaw, 0.0F, 1.5F, 1.0F);
             worldIn.spawnEntity(entityWeapon);
         }

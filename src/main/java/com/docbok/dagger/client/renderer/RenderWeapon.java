@@ -1,5 +1,7 @@
 package com.docbok.dagger.client.renderer;
 
+import com.docbok.dagger.entity.projectile.EntityWeapon;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.RenderItem;
@@ -8,7 +10,6 @@ import net.minecraft.client.renderer.entity.Render;
 import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.entity.Entity;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.relauncher.SideOnly;
@@ -17,14 +18,13 @@ import net.minecraftforge.fml.relauncher.Side;
 @SideOnly(Side.CLIENT)
 public class RenderWeapon<T extends Entity> extends Render<T>
 {
-	public RenderWeapon(RenderManager renderManagerIn, Item weapon, float rotationSpeed)
+	public RenderWeapon(RenderManager renderManagerIn)
 	{
 		super(renderManagerIn);
 		
-		_item = weapon;
 		_itemRenderer =  Minecraft.getMinecraft().getRenderItem();
 		_rotation = 135.0f;
-		_rotationSpeed = rotationSpeed;
+		_rotationSpeed = 10.0f;
 	}
 
     /**
@@ -50,7 +50,7 @@ public class RenderWeapon<T extends Entity> extends Render<T>
             GlStateManager.enableOutlineMode(this.getTeamColor(entity));
         }
 
-        _itemRenderer.renderItem(this.getStackToRender(entity), ItemCameraTransforms.TransformType.GROUND);
+        _itemRenderer.renderItem(getStackToRender(entity), ItemCameraTransforms.TransformType.GROUND);
 
         if (this.renderOutlines)
         {
@@ -65,7 +65,8 @@ public class RenderWeapon<T extends Entity> extends Render<T>
 
     public ItemStack getStackToRender(T entityIn)
     {
-        return new ItemStack(_item);
+    	EntityWeapon weapon = (EntityWeapon)entityIn;
+        return weapon.getItemStack();
     }
 
     /**
@@ -76,7 +77,6 @@ public class RenderWeapon<T extends Entity> extends Render<T>
         return TextureMap.LOCATION_BLOCKS_TEXTURE;
     }
     
-    private Item _item;
     private RenderItem _itemRenderer;
     private float _rotation;
     private float _rotationSpeed;
